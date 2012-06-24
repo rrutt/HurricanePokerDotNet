@@ -66,10 +66,12 @@
       this.outputArea.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                   | System.Windows.Forms.AnchorStyles.Right)));
       this.outputArea.BackColor = System.Drawing.SystemColors.Window;
+      this.outputArea.Font = new System.Drawing.Font("Courier New", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.outputArea.Location = new System.Drawing.Point(8, 351);
       this.outputArea.Multiline = true;
       this.outputArea.Name = "outputArea";
       this.outputArea.ReadOnly = true;
+      this.outputArea.ScrollBars = System.Windows.Forms.ScrollBars.Both;
       this.outputArea.Size = new System.Drawing.Size(539, 148);
       this.outputArea.TabIndex = 5;
       this.outputArea.TabStop = false;
@@ -202,6 +204,8 @@
       this.Controls.Add(this.textArea);
       this.Name = "HurricanePoker";
       this.Text = "Hurricane Poker - Using tuProlog";
+      this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.HurricanePoker_FormClosed);
+      this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.HurricanePoker_FormClosing);
       this.yesNoDialog.ResumeLayout(false);
       this.yesNoDialog.PerformLayout();
       this.okDialog.ResumeLayout(false);

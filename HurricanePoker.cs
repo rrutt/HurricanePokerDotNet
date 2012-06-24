@@ -330,6 +330,9 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
       outputArea.Text += s;
       outputArea.SelectionStart = outputArea.TextLength;
       outputArea.SelectionLength = 0;
+      outputArea.ScrollToCaret();
+
+      Application.DoEvents();
     }
 
     public void onSpy(SpyEvent ev)
@@ -337,7 +340,17 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
       String s = Utilities.stripQuotes(ev.getMsg());
       System.Console.Out.Write(" {Spy: ");
       System.Console.Out.Write(s);
-      System.Console.Out.Write("}\n");
+      System.Console.Out.WriteLine("}");
+    }
+
+    private void HurricanePoker_FormClosing(object sender, FormClosingEventArgs e)
+    {
+      Application.DoEvents();
+    }
+
+    private void HurricanePoker_FormClosed(object sender, FormClosedEventArgs e)
+    {
+      System.Environment.Exit(0);
     }
   }
 }
