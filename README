@@ -1,14 +1,18 @@
-Hurricane is two-card draw poker, deuces wild, played as high/low; aces, deuces play both high and low.
+Hurricane is two-card draw poker, deuces wild, played as high/low; 
+aces, deuces play both high and low.
 
-This is an implementation of the game using Java and Prolog.
-The game rules and artificial intelligence engine uses tuProlog (also known as 2p) from the University of Bologna.
+This is an implementation of the game using C# and Prolog.
+The game rules and artificial intelligence engine uses tuProlog (
+also known as 2p) from the University of Bologna.
 
-To run the game, open a command-prompt (terminal) window and navigate to the out sub-folder, containing the JAR files. 
-Enter one the following command:
+To run the game, open a command-prompt (terminal) window and navigate to the out sub-folder, 
+containing the executable files. 
+
+Enter the following command:
   
-    java -jar HurricanePoker.jar
+    HurricanePoker
 
-For more information about the game, see the *.txt files in the src sub-folder.
+For more information about the game, open the HurricanePoker.html page in any browser.
   
 Also see this WordPress blog article:
   

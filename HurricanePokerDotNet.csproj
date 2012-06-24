@@ -76,6 +76,9 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <None Include=".gitignore" />
+    <Content Include="HurricanePoker.pl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

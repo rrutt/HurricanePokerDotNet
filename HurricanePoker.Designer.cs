@@ -39,7 +39,7 @@
       this.okButton = new System.Windows.Forms.Button();
       this.menuDialog = new System.Windows.Forms.FlowLayoutPanel();
       this.menuText = new System.Windows.Forms.TextBox();
-      this.menuButton0 = new System.Windows.Forms.Button();
+      this.menuButton = new System.Windows.Forms.Button();
       this.textAreaTitle = new System.Windows.Forms.Label();
       this.yesNoDialog.SuspendLayout();
       this.okDialog.SuspendLayout();
@@ -51,6 +51,7 @@
       this.textArea.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                   | System.Windows.Forms.AnchorStyles.Right)));
       this.textArea.BackColor = System.Drawing.SystemColors.Window;
+      this.textArea.Font = new System.Drawing.Font("Courier New", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       this.textArea.Location = new System.Drawing.Point(8, 38);
       this.textArea.Multiline = true;
       this.textArea.Name = "textArea";
@@ -58,7 +59,6 @@
       this.textArea.Size = new System.Drawing.Size(539, 307);
       this.textArea.TabIndex = 0;
       this.textArea.TabStop = false;
-      this.textArea.Text = "(textArea)";
       this.textArea.WordWrap = false;
       // 
       // outputArea
@@ -73,7 +73,6 @@
       this.outputArea.Size = new System.Drawing.Size(539, 148);
       this.outputArea.TabIndex = 5;
       this.outputArea.TabStop = false;
-      this.outputArea.Text = "(outputArea)";
       // 
       // yesNoDialog
       // 
@@ -85,6 +84,7 @@
       this.yesNoDialog.Name = "yesNoDialog";
       this.yesNoDialog.Size = new System.Drawing.Size(170, 110);
       this.yesNoDialog.TabIndex = 3;
+      this.yesNoDialog.Visible = false;
       // 
       // yesNoText
       // 
@@ -94,7 +94,6 @@
       this.yesNoText.Size = new System.Drawing.Size(165, 22);
       this.yesNoText.TabIndex = 0;
       this.yesNoText.TabStop = false;
-      this.yesNoText.Text = "(yesNoText)";
       this.yesNoText.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
       // 
       // yesButton
@@ -105,6 +104,7 @@
       this.yesButton.TabIndex = 1;
       this.yesButton.Text = "Yes";
       this.yesButton.UseVisualStyleBackColor = true;
+      this.yesButton.Click += new System.EventHandler(this.yesButton_Click);
       // 
       // noButton
       // 
@@ -114,6 +114,7 @@
       this.noButton.TabIndex = 2;
       this.noButton.Text = "No";
       this.noButton.UseVisualStyleBackColor = true;
+      this.noButton.Click += new System.EventHandler(this.noButton_Click);
       // 
       // okDialog
       // 
@@ -124,6 +125,7 @@
       this.okDialog.Name = "okDialog";
       this.okDialog.Size = new System.Drawing.Size(171, 70);
       this.okDialog.TabIndex = 2;
+      this.okDialog.Visible = false;
       // 
       // okText
       // 
@@ -133,7 +135,6 @@
       this.okText.Size = new System.Drawing.Size(165, 22);
       this.okText.TabIndex = 0;
       this.okText.TabStop = false;
-      this.okText.Text = "(okText)";
       this.okText.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
       // 
       // okButton
@@ -144,16 +145,18 @@
       this.okButton.TabIndex = 1;
       this.okButton.Text = "OK";
       this.okButton.UseVisualStyleBackColor = true;
+      this.okButton.Click += new System.EventHandler(this.okButton_Click);
       // 
       // menuDialog
       // 
       this.menuDialog.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.menuDialog.Controls.Add(this.menuText);
-      this.menuDialog.Controls.Add(this.menuButton0);
+      this.menuDialog.Controls.Add(this.menuButton);
       this.menuDialog.Location = new System.Drawing.Point(553, 197);
       this.menuDialog.Name = "menuDialog";
       this.menuDialog.Size = new System.Drawing.Size(171, 302);
       this.menuDialog.TabIndex = 4;
+      this.menuDialog.Visible = false;
       // 
       // menuText
       // 
@@ -163,18 +166,19 @@
       this.menuText.Size = new System.Drawing.Size(165, 22);
       this.menuText.TabIndex = 0;
       this.menuText.TabStop = false;
-      this.menuText.Text = "(menuText)";
       this.menuText.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
       // 
-      // menuButton0
+      // menuButton
       // 
-      this.menuButton0.Location = new System.Drawing.Point(3, 31);
-      this.menuButton0.Name = "menuButton0";
-      this.menuButton0.Size = new System.Drawing.Size(165, 32);
-      this.menuButton0.TabIndex = 1;
-      this.menuButton0.Tag = "0";
-      this.menuButton0.Text = "(menuButton0)";
-      this.menuButton0.UseVisualStyleBackColor = true;
+      this.menuButton.Location = new System.Drawing.Point(3, 31);
+      this.menuButton.Name = "menuButton";
+      this.menuButton.Size = new System.Drawing.Size(165, 32);
+      this.menuButton.TabIndex = 1;
+      this.menuButton.Tag = "0";
+      this.menuButton.Text = "(menuButton)";
+      this.menuButton.UseVisualStyleBackColor = true;
+      this.menuButton.Visible = false;
+      this.menuButton.Click += new System.EventHandler(this.menuButton_Click);
       // 
       // textAreaTitle
       // 
@@ -222,7 +226,7 @@
     private System.Windows.Forms.Button okButton;
     private System.Windows.Forms.FlowLayoutPanel menuDialog;
     private System.Windows.Forms.TextBox menuText;
-    private System.Windows.Forms.Button menuButton0;
+    private System.Windows.Forms.Button menuButton;
     private System.Windows.Forms.Label textAreaTitle;
   }
 }

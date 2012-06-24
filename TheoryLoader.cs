@@ -6,43 +6,32 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
 {
   public class TheoryLoader
   {
-    private static readonly string TheoryFolderPath = @".";
-
-    private static readonly string[] TheoryResourceNames = {
-		"HurricanePoker.pl",
-  };
-
-    public string Load()
+    public string Load(string theoryPath)
     {
       var sb = new StringBuilder();
 
-      foreach (var resourceName in TheoryResourceNames)
-      {
-        appendResource(resourceName, sb);
-      }
-
+      appendResource(theoryPath, sb);
       var theoryString = sb.ToString();
 
       return theoryString;
     }
 
-    private void appendResource(string resourceName, StringBuilder sb)
+    private void appendResource(string resourcePath, StringBuilder sb)
     {
-      System.Console.Out.WriteLine("Loading " + resourceName);
+      System.Console.Out.WriteLine("Loading " + resourcePath);
 
-      var theoryFileRelativePath = Path.Combine(TheoryFolderPath, resourceName);
-      var theoryFileAbsolutePath = Path.GetFullPath(theoryFileRelativePath);
+      var resourceAbsolutePath = Path.GetFullPath(resourcePath);
 
       try
       {
-        var theoryText = File.ReadAllText(theoryFileAbsolutePath);
-        sb.Append(theoryText);
+        var resourceText = File.ReadAllText(resourceAbsolutePath);
+        sb.Append(resourceText);
       }
       catch (Exception e)
       {
         var s = string.Format(
           "Could not load resource [{0}]\n  {1}: {2}\n",
-          theoryFileAbsolutePath, e.GetType().Name, e.Message);
+          resourceAbsolutePath, e.GetType().Name, e.Message);
         System.Console.Out.Write(s);
       }
     }

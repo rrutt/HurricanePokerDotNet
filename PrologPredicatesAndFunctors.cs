@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 using alice.tuprolog;
@@ -12,9 +13,9 @@ namespace Com.Live.RRutt.TuProlog.Lib
     public static bool enableSpying = false;
     public static bool enablePeeking = false;
 
-    protected TextWriter outputStream = System.Console.Out;
-
     private IMainWindow _mainWindow;
+
+    private Random _random = new Random();
 
     public PrologPredicatesAndFunctors(IMainWindow mainWindow)
     {
@@ -50,7 +51,7 @@ namespace Com.Live.RRutt.TuProlog.Lib
       int col = intValueFromTerm(colTerm);
       // logMsg("text_cursor " + row + " " + col);
 
-      textWindow.setCursorRowCol(row, col);
+      _mainWindow.SetTextCursorRowCol(row, col);
       return true;
     }
 
@@ -103,14 +104,14 @@ namespace Com.Live.RRutt.TuProlog.Lib
     public bool text_write_1(Term arg0)
     {
       String text = stringValueFromTerm(arg0);
-      textWindow.writeText(text);
+      _mainWindow.WriteText(text);
       // logMsg("text_write " + text);
       return true;
     }
 
     public bool text_nl_0()
     {
-      textWindow.newLine();
+      _mainWindow.TextNewLine();
       // logMsg("text_nl");
       return true;
     }
@@ -154,14 +155,24 @@ namespace Com.Live.RRutt.TuProlog.Lib
     public bool menu_3(Term arg0, Term arg1, Term arg2)
     {
       String menuCaption = stringValueFromTerm(arg0);
-      Struct choiceList = (Struct)arg1;
-      Term choiceTerm = arg2;
-      // logMsg("menu " + menuCaption + ": " + choiceList.toString());
-      MenuDialog md = new MenuDialog(new javax.swing.JFrame(), true,
-          menuCaption, choiceList);
-      md.setVisible(true);
-      int choice = md.choice();
-      return unify(choiceTerm, new alice.tuprolog.Int(choice));
+      Struct choices = (Struct)arg1;
+      Term choiceResultTerm = arg2;
+
+      var choicesList = new List<string>();
+		  var iter = choices.listIterator();
+      while (iter.hasNext())
+      {
+        Term choiceTerm = (Term)(iter.next());
+        var choiceText = Utilities.stripQuotes(stringValueFromTerm(choiceTerm));
+        if (choiceText.Length > 0)
+        {
+          choicesList.Add(choiceText);
+        }
+      }
+
+      int choice = _mainWindow.MenuDialog(menuCaption, choicesList);
+
+      return unify(choiceResultTerm, new alice.tuprolog.Int(choice));
     }
 
     public Term random_int_1(Term val0)
@@ -174,7 +185,8 @@ namespace Com.Live.RRutt.TuProlog.Lib
             "random_int requires a bound integer parameter.");
       }
       int n = ((alice.tuprolog.Number)val0).intValue();
-      java.lang.Double d = new java.lang.Double(1 + (Math.random() * n));
+
+      java.lang.Double d = new java.lang.Double(1 + (_random.NextDouble() * n));
       unify(result, new alice.tuprolog.Int(d.intValue()));
 
       return result;
@@ -184,7 +196,7 @@ namespace Com.Live.RRutt.TuProlog.Lib
     {
       Term result = new Var();
 
-      unify(result, new alice.tuprolog.Double(Math.random()));
+      unify(result, new alice.tuprolog.Double(_random.NextDouble()));
 
       return result;
     }
@@ -273,18 +285,16 @@ namespace Com.Live.RRutt.TuProlog.Lib
     public bool ask_ok_0()
     {
       String msg = "Click to proceed.";
-      OkDialog okd = new OkDialog(new javax.swing.JFrame(), true, msg);
-      okd.setVisible(true);
-      bool ok = okd.isOk();
+      bool ok = _mainWindow.OkDialog(msg);
+
       return ok;
     }
 
     public bool ask_ok_1(Term arg0)
     {
       String text = stringValueFromTerm(arg0);
-      OkDialog okd = new OkDialog(new javax.swing.JFrame(), true, text);
-      okd.setVisible(true);
-      bool ok = okd.isOk();
+      bool ok = _mainWindow.OkDialog(text);
+
       return ok;
     }
 
@@ -293,27 +303,24 @@ namespace Com.Live.RRutt.TuProlog.Lib
       String text0 = stringValueFromTerm(arg0);
       String text1 = stringValueFromTerm(arg1);
       String msg = Utilities.stripQuotes(text0) + Utilities.stripQuotes(text1);
-      OkDialog okd = new OkDialog(new javax.swing.JFrame(), true, msg);
-      okd.setVisible(true);
-      bool ok = okd.isOk();
+      bool ok = _mainWindow.OkDialog(msg);
+
       return ok;
     }
 
     public bool ask_yes_no_0()
     {
       String msg = "Click to proceed.";
-      YesNoDialog ynd = new YesNoDialog(new javax.swing.JFrame(), true, msg);
-      ynd.setVisible(true);
-      bool ok = ynd.yes();
+      bool ok = _mainWindow.YesNoDialog(msg);
+
       return ok;
     }
 
     public bool ask_yes_no_1(Term arg0)
     {
       String text = stringValueFromTerm(arg0);
-      YesNoDialog ynd = new YesNoDialog(new javax.swing.JFrame(), true, text);
-      ynd.setVisible(true);
-      bool ok = ynd.yes();
+      bool ok = _mainWindow.YesNoDialog(text);
+
       return ok;
     }
 
@@ -322,9 +329,8 @@ namespace Com.Live.RRutt.TuProlog.Lib
       String text0 = stringValueFromTerm(arg0);
       String text1 = stringValueFromTerm(arg1);
       String msg = Utilities.stripQuotes(text0) + Utilities.stripQuotes(text1);
-      YesNoDialog ynd = new YesNoDialog(new javax.swing.JFrame(), true, msg);
-      ynd.setVisible(true);
-      bool ok = ynd.yes();
+      bool ok = _mainWindow.YesNoDialog(msg);
+
       return ok;
     }
 

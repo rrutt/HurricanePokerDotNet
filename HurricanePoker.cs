@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 using alice.tuprolog;
@@ -20,9 +21,18 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
   {
     public Prolog engine;
 
-    private static String TheoryResourceName = "HurricanePoker.pl";
+    public const String DefaultTheoryFilePath = @".\HurricanePoker.pl";
 
-    private String theoryFilePath = null;
+    private const int OneSecond = 1000;
+
+    private String theoryFilePath = DefaultTheoryFilePath;
+
+    private int textCursorRow = 0;
+    private int textCursorCol = 0;
+
+    private bool waitingForUser = false;
+
+    private int dialogResult = 0;
 
     public HurricanePoker(string[] args)
     {
@@ -59,6 +69,10 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
 
       InitializeComponent();
 
+      this.Visible = true;
+
+      Application.DoEvents();
+
       engine = new Prolog();
       try
       {
@@ -79,10 +93,12 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
       try
       {
         TheoryLoader loader = new TheoryLoader();
-        String theoryText = loader.Load();
+        String theoryText = loader.Load(theoryFilePath);
         var t = new Theory(theoryText);
         //				t = new Theory(theoryInputStream);
         engine.setTheory(t);
+
+        Application.DoEvents();
 
         SolveInfo info = engine.solve("x.");
         //			System.Console.Out.Write(info);
@@ -106,11 +122,211 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
     public void ClearText()
     {
       textArea.Text = string.Empty;
+      SetTextCursorRowCol(0, 0);
+
+      Application.DoEvents();
+    }
+
+    public void SetTextCursorRowCol(int row, int col)
+    {
+      textCursorRow = row;
+      textCursorCol = col;
+    }
+
+    public void TextNewLine()
+    {
+      textCursorRow++;
+      textCursorCol = 0;
+    }
+
+    public void WriteText(string text)
+    {
+      if (!string.IsNullOrEmpty(text))
+      {
+        var s = Utilities.stripQuotes(text);
+
+        var textLines = new List<string>();
+        foreach (var line in textArea.Lines)
+        {
+          textLines.Add(line);
+        }
+
+        while (textCursorRow >= textLines.Count)
+        {
+          textLines.Add(string.Empty);
+        }
+
+        var textLine = textLines[textCursorRow];
+        var lineLength = textLine.Length;
+
+        if (textCursorCol > lineLength)
+        {
+          textLine += new string(' ', (textCursorCol - lineLength));
+          lineLength = textLine.Length;
+        }
+        else if (textCursorCol < lineLength)
+        {
+          textLine = textLine.Substring(0, textCursorCol);
+          lineLength = textLine.Length;
+        }
+
+        textLine += text;
+
+        textLines[textCursorRow] = textLine;
+
+        var sb = new StringBuilder();
+        foreach (var line in textLines)
+        {
+          sb.Append(line).Append("\r\n");
+        }
+
+        textArea.Text = sb.ToString();
+
+        textCursorCol += text.Length;
+
+        Application.DoEvents();
+      }
+    }
+
+    public int MenuDialog(string caption, List<string> choiceList)
+    {
+      var buttonLocation = this.menuButton.Location;
+
+      var buttonList = new List<System.Windows.Forms.Button>();
+
+      int choiceIndex = 0;
+      foreach (var choiceText in choiceList)
+      {
+        choiceIndex++;
+        var choiceTag = choiceIndex.ToString();
+
+        var button = new System.Windows.Forms.Button();
+
+        button.Location = buttonLocation;
+        button.Name = "menuButton" + choiceTag;
+        button.Size = this.menuButton.Size;
+        button.TabIndex = 1 + choiceIndex;
+        button.Tag = choiceTag;
+        button.Text = choiceText;
+        button.UseVisualStyleBackColor = true;
+        button.Visible = true;
+        button.Click += new System.EventHandler(this.menuButton_Click);
+
+        buttonLocation = new Point(
+          buttonLocation.X,
+          buttonLocation.Y + this.menuButton.Size.Height
+          );
+
+        buttonList.Add(button);
+        this.menuDialog.Controls.Add(button);
+      }
+
+      menuText.Text = caption;
+
+      this.menuDialog.Visible = true;
+
+      Application.DoEvents();
+
+      waitingForUser = true;
+      while (waitingForUser)
+      {
+        Thread.Sleep(OneSecond);
+        Application.DoEvents();
+      }
+
+      this.menuDialog.Visible = false;
+
+      foreach (var b in buttonList)
+      {
+        this.menuDialog.Controls.Remove(b);
+      }
+
+      Application.DoEvents();
+
+      return dialogResult;
+    }
+
+    private void menuButton_Click(object sender, EventArgs e)
+    {
+      var button = sender as System.Windows.Forms.Button;
+      if (button != null)
+      {
+        var tag = button.Tag as string;
+        var parseOk = int.TryParse(tag, out dialogResult);
+        if (parseOk)
+        {
+          waitingForUser = false;
+        }
+      }
+    }
+
+    public bool OkDialog(string caption)
+    {
+      okText.Text = caption;
+
+      this.okDialog.Visible = true;
+
+      Application.DoEvents();
+
+      waitingForUser = true;
+      while (waitingForUser)
+      {
+        Thread.Sleep(OneSecond);
+        Application.DoEvents();
+      }
+
+      this.okDialog.Visible = false;
+
+      Application.DoEvents();
+
+      return true;
+    }
+
+    private void okButton_Click(object sender, EventArgs e)
+    {
+      waitingForUser = false;
+    }
+
+    public bool YesNoDialog(string caption)
+    {
+      yesNoText.Text = caption;
+
+      this.yesNoDialog.Visible = true;
+
+      Application.DoEvents();
+
+      waitingForUser = true;
+      while (waitingForUser)
+      {
+        Thread.Sleep(OneSecond);
+        Application.DoEvents();
+      }
+
+      this.yesNoDialog.Visible = false;
+
+      Application.DoEvents();
+
+      var isYes = (dialogResult == 1);
+
+      return isYes;
+    }
+
+    private void yesButton_Click(object sender, EventArgs e)
+    {
+      dialogResult = 1;
+      waitingForUser = false;
+    }
+
+    private void noButton_Click(object sender, EventArgs e)
+    {
+      dialogResult = 2;
+      waitingForUser = false;
     }
 
     public void onOutput(OutputEvent ev)
     {
       String s = Utilities.stripQuotes(ev.getMsg());
+      s = s.Replace("\n", "\r\n");
       outputArea.Text += s;
       outputArea.SelectionStart = outputArea.TextLength;
       outputArea.SelectionLength = 0;
