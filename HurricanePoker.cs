@@ -55,6 +55,11 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
             PrologPredicatesAndFunctors.enableSpying = true;
             System.Console.Out.WriteLine("Spy output enabled.");
           }
+          else if (arg.Equals("-trace", StringComparison.CurrentCultureIgnoreCase))
+          {
+            PrologPredicatesAndFunctors.enableTrace = true;
+            System.Console.Out.WriteLine("Trace output enabled.");
+          }
           else
           {
             System.Console.Out.WriteLine("Unknown command argument ignored: " + arg);

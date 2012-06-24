@@ -11,7 +11,8 @@ namespace Com.Live.RRutt.TuProlog.Lib
   public class PrologPredicatesAndFunctors : Library
   {
     public static bool enableSpying = false;
-    public static bool enablePeeking = false;
+    public static bool enablePeeking = false;    
+    public static bool enableTrace = false;
 
     private IMainWindow _mainWindow;
 
@@ -344,6 +345,44 @@ namespace Com.Live.RRutt.TuProlog.Lib
     {
       String text = stringValueFromTerm(arg0);
       System.Console.Out.WriteLine(" {break_point: " + text + "}");
+      return true;
+    }
+
+    public bool trace_enabled_0()
+    {
+      return enableTrace;
+    }
+
+    public bool enable_trace_0()
+    {
+      enableTrace = true;
+      System.Console.Out.WriteLine("+++ enable_trace.");
+      return true;
+    }
+
+    public bool disable_trace_0()
+    {
+      enableTrace = false;
+      System.Console.Out.WriteLine("--- disable_trace.");
+      return true;
+    }
+
+    public bool trace_1(Term arg0)
+    {
+      if (enableTrace)
+      {
+        String text = stringValueFromTerm(arg0);
+        System.Console.Out.Write(text);
+      }
+      return true;
+    }
+
+    public bool trace_nl_0()
+    {
+      if (enableTrace)
+      {
+        System.Console.Out.WriteLine();
+      }
       return true;
     }
   }
