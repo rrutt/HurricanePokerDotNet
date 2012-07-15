@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 using alice.tuprolog;
 
@@ -10,13 +11,15 @@ namespace Com.Live.RRutt.TuProlog.Lib
 {
   public class PrologPredicatesAndFunctors : Library
   {
-    public static bool enableSpying = false;
-    public static bool enablePeeking = false;    
-    public static bool enableTrace = false;
+    public bool enableSpying = false;
+    public bool enablePeeking = false;    
+    public bool enableTrace = false;
 
     private IMainWindow _mainWindow;
 
     private Random _random = new Random();
+
+    private Dictionary<String, List<String>> cardDecks = null;
 
     public PrologPredicatesAndFunctors(IMainWindow mainWindow)
     {
@@ -383,6 +386,96 @@ namespace Com.Live.RRutt.TuProlog.Lib
       {
         System.Console.Out.WriteLine();
       }
+      return true;
+    }
+
+    private List<String> getCardDeck(String deckName)
+    {
+      if (cardDecks == null)
+      {
+        cardDecks = new Dictionary<string, List<string>>();
+      }
+
+      List<String> cardDeck = null;
+      if (cardDecks.ContainsKey(deckName))
+      {
+        cardDeck = cardDecks[deckName];
+      }
+      else
+      {
+        cardDeck = new List<string>();
+      }
+
+      return cardDeck;
+    }
+
+    public bool clear_all_card_decks_0()
+    {
+      cardDecks = null;
+
+      return true;
+    }
+
+    public bool add_card_to_top_of_deck_2(Term arg0, Term arg1)
+    {
+      String deckName = stringValueFromTerm(arg0);
+      String card = stringValueFromTerm(arg1);
+
+      List<String> cardDeck = getCardDeck(deckName);
+      cardDeck.Insert(0, card);
+
+      return true;
+    }
+
+    public bool add_card_to_bottom_of_deck_2(Term arg0, Term arg1)
+    {
+      String deckName = stringValueFromTerm(arg0);
+      String card = stringValueFromTerm(arg1);
+
+      List<String> cardDeck = getCardDeck(deckName);
+      cardDeck.Add(card);
+
+      return true;
+    }
+
+    public bool deal_card_from_deck_2(Term arg0, Term arg1)
+    {
+      String deckName = stringValueFromTerm(arg0);
+
+      List<String> cardDeck = getCardDeck(deckName);
+      String card = null;
+
+      if (cardDeck.Count > 0)
+      {
+        card = cardDeck[0];
+        cardDeck.RemoveAt(0);
+      }
+
+      bool foundCard = (card != null);
+      if (foundCard)
+      {
+        unify(arg1, new Struct(card));
+      }
+
+      return foundCard;
+    }
+
+    public bool fetch_card_deck_2(Term arg0, Term arg1)
+    {
+      String deckName = stringValueFromTerm(arg0);
+
+      List<String> cardDeck = getCardDeck(deckName);
+      StringBuilder cards = new StringBuilder();
+
+      foreach (String card in cardDeck)
+      {
+        cards.Append(card);
+      }
+
+      String deckCards = cards.ToString();
+
+      unify(arg1, new Struct(deckCards));
+
       return true;
     }
   }

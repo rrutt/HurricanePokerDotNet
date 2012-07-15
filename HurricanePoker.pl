@@ -249,31 +249,27 @@
   peekaboo :-
     peek_enabled,
 	peek_nl, peek_write("Left Split:"), peek_nl,
-  	card_deck(left, DNM),
-  		denomination_value(DC, DNM, _),  % Use "high" value 
-  		peek_write(DC),
-  		fail.
+  	fetch_card_deck(left, DECK),
+	peek_write(DECK),
+	fail.
   peekaboo :-
     peek_enabled,
 	peek_nl, peek_write("Right Split:"), peek_nl,
-  	card_deck(right, DNM),
-  		denomination_value(DC, DNM, _),  % Use "high" value 
-  		peek_write(DC),
-  		fail.
+  	fetch_card_deck(right, DECK),
+	peek_write(DECK),
+	fail.
   peekaboo :-
     peek_enabled,
 	peek_nl, peek_write("Main Deck:"), peek_nl,
-  	card_deck(main, DNM),
-  		denomination_value(DC, DNM, _),  % Use "high" value 
-  		peek_write(DC),
-  		fail.
+  	fetch_card_deck(main, DECK),
+	peek_write(DECK),
+	fail.
   peekaboo :-
     peek_enabled,
 	peek_nl, peek_write("Discard Pile:"), peek_nl,
-  	card_deck(discard, DNM),
-  		denomination_value(DC, DNM, _),  % Use "high" value 
-  		peek_write(DC),
-  		fail.
+  	fetch_card_deck(discard, DECK),
+	peek_write(DECK),
+	fail.
   peekaboo :-
     peek_enabled,
   	peek_nl, peek_write("Hands:"), peek_nl, peek_write(" "),
@@ -422,22 +418,16 @@
 	text_write(T1).
 
 
-  retract_card_deck(X, D) :-
-    trace('retract_card_deck X='),trace(X),trace(' D='),trace(D),trace_nl,
-    retract(card_deck(X, D)),
-    !.
-  retract_card_deck(X, D) :-
-    trace('retract_card_deck  backstop X='),trace(X),trace(' D='),trace(D),trace_nl,
-    !.
-
   asserta_card_deck(X, D) :-
-    asserta(card_deck(X, D)),
+  	denomination_value(D, DNM, _),  % Use "high" value 
+    add_card_to_top_of_deck(X, DNM),
     !.
   asserta_card_deck(X, D) :-
     !.
 
   assertz_card_deck(X, D) :-
-    assertz(card_deck(X, D)),
+  	denomination_value(D, DNM, _),  % Use "high" value 
+    add_card_to_bottom_of_deck(X, DNM),
     !.
   assertz_card_deck(X, D):-
 	!.
@@ -449,9 +439,8 @@
 	!.
 
   shuffle_deck(new) :-
-  	card_deck(X, DNM),
-  		retract_card_deck(X, DNM),
-  		fail.  % loop to delete old cards 
+    clear_all_card_decks,
+    fail.
   shuffle_deck(new) :-
   	player_hand(P, C1, C2),
   		retract_player_hand(P, C1, C2),
@@ -480,9 +469,8 @@
   	!.  % Game over, skip shuffling 
   shuffle_deck(old) :-
   	nl, write(" Shuffling cards "),
-  	card_deck(discard, DNM),
-	  	retract_card_deck(discard, DNM),
-  		assertz_card_deck(main, DNM),
+  	deal_card_from_deck(discard, C),
+  		add_card_to_bottom_of_deck(main, C),
   		fail.
   shuffle_deck(old) :-
     	shuffle_deck(riffle),
@@ -499,31 +487,28 @@
   	!.
   	   	
   shuffle_deck(split):-
-  	card_deck(main, DNM),
-		retract_card_deck(main, DNM),
+  	deal_card_from_deck(main, C),
 		RR is random_double,
-		split_card_to_pile(DNM, RR),
+		split_card_to_pile(C, RR),
 		fail. 
   shuffle_deck(split) :- !.
   	   	
   shuffle_deck(combine):-
-  	card_deck(left, DNM),
-		retract_card_deck(left, DNM),
-		assertz_card_deck(main, DNM),
+  	deal_card_from_deck(left, C),
+		add_card_to_bottom_of_deck(main, C),
 		fail.
   shuffle_deck(combine):-
-  	card_deck(right, DNM),
-		retract_card_deck(right, DNM),
-		assertz_card_deck(main, DNM),
+  	deal_card_from_deck(right, C),
+		add_card_to_bottom_of_deck(main, C),
 		fail.
   shuffle_deck(combine) :- !.
 
   
-  split_card_to_pile(DNM, N) :-
+  split_card_to_pile(C, N) :-
   	N < 0.5, !,
-  	assertz_card_deck(left, DNM).
-  split_card_to_pile(DNM, _) :-
-  	assertz_card_deck(right, DNM).
+  	add_card_to_bottom_of_deck(left, C).
+  split_card_to_pile(C, _) :-
+  	add_card_to_bottom_of_deck(right, C).
 
 
   deal_cards(start) :-
@@ -585,10 +570,10 @@
   	
   deal_a_card(P) :-
     trace('deal_a_card P='),trace(P),trace_nl,
-  	card_deck(main, D),
+  	deal_card_from_deck_2(main, C),
   	!,
+  	denomination_value(C, D, _),  % Use "high" value 
   	trace('deal_a_card D='),trace(D),trace_nl,
-  	retract_card_deck(main, D),
   	trace('deal_a_card deal_to_player P='),trace(P),trace_nl,
   	deal_to_player(P, D),
   	trace('deal_a_card deal_to_player done P='),trace(P),trace(' D='),trace(D),trace_nl.

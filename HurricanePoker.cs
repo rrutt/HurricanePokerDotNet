@@ -41,23 +41,27 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
           + Prolog.getVersion()
           );
 
+      bool enablePeeking = false;
+      bool enableSpying = false;
+      bool enableTrace = false;
+
       foreach (var arg in args)
       {
         if ((arg.Length > 1) && (arg[0] == '-'))
         {
           if (arg.Equals("-peek", StringComparison.CurrentCultureIgnoreCase))
           {
-            PrologPredicatesAndFunctors.enablePeeking = true;
+            enablePeeking = true;
             System.Console.Out.WriteLine("Peek output enabled.");
           }
           else if (arg.Equals("-spy", StringComparison.CurrentCultureIgnoreCase))
           {
-            PrologPredicatesAndFunctors.enableSpying = true;
+            enableSpying = true;
             System.Console.Out.WriteLine("Spy output enabled.");
           }
           else if (arg.Equals("-trace", StringComparison.CurrentCultureIgnoreCase))
           {
-            PrologPredicatesAndFunctors.enableTrace = true;
+            enableTrace = true;
             System.Console.Out.WriteLine("Trace output enabled.");
           }
           else
@@ -82,6 +86,10 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
       try
       {
         var library = new PrologPredicatesAndFunctors(this);
+        library.enablePeeking = enablePeeking;
+        library.enableSpying = enableSpying;
+        library.enableTrace = enableTrace;
+
         engine.loadLibrary(library);
       }
       catch (Exception e)
@@ -93,7 +101,7 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
       }
       engine.addOutputListener(this);
       engine.addSpyListener(this);
-      engine.setSpy(PrologPredicatesAndFunctors.enableSpying);
+      engine.setSpy(enableSpying);
 
       try
       {
