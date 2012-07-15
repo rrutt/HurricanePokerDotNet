@@ -26,6 +26,11 @@ namespace Com.Live.RRutt.TuProlog.Lib
       _mainWindow = mainWindow;
     }
 
+    public bool no_op_0()
+    {
+      return true;
+    }
+
     public bool text_title_1(Struct g)
     {
       //		Term arg0 = g.getTerm(0);
@@ -404,6 +409,7 @@ namespace Com.Live.RRutt.TuProlog.Lib
       else
       {
         cardDeck = new List<string>();
+        cardDecks.Add(deckName, cardDeck);
       }
 
       return cardDeck;
@@ -475,6 +481,52 @@ namespace Com.Live.RRutt.TuProlog.Lib
       String deckCards = cards.ToString();
 
       unify(arg1, new Struct(deckCards));
+
+      return true;
+    }
+
+    public bool move_cards_between_decks_2(Term arg0, Term arg1)
+    {
+      String fromDeckName = stringValueFromTerm(arg0);
+      String toDeckName = stringValueFromTerm(arg1);
+
+      List<String> fromCardDeck = getCardDeck(fromDeckName);
+      List<String> toCardDeck = getCardDeck(toDeckName);
+
+      foreach (String card in fromCardDeck)
+      {
+        toCardDeck.Add(card);
+      }
+
+      fromCardDeck.Clear();
+
+      return true;
+    }
+
+    public bool split_card_decks_randomly_3(Term arg0, Term arg1, Term arg2)
+    {
+      String fromDeckName = stringValueFromTerm(arg0);
+      String toDeckName1 = stringValueFromTerm(arg1);
+      String toDeckName2 = stringValueFromTerm(arg2);
+
+      List<String> fromCardDeck = getCardDeck(fromDeckName);
+      List<String> toCardDeck1 = getCardDeck(toDeckName1);
+      List<String> toCardDeck2 = getCardDeck(toDeckName2);
+
+      foreach (String card in fromCardDeck)
+      {
+        double r = _random.NextDouble();
+        if (r < 0.5)
+        {
+          toCardDeck1.Add(card);
+        }
+        else
+        {
+          toCardDeck2.Add(card);
+        }
+      }
+
+      fromCardDeck.Clear();
 
       return true;
     }

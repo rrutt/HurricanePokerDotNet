@@ -10,6 +10,7 @@
 	nl, write(" 1 bet and 2 raises per round."),
 	nl,
 	shuffle_deck(new),
+	trace('shuffle_deck new to old'),trace_nl,
 	shuffle_deck(old),
 	nl, write(" Shuffled new deck "), nl, !,
 	clear_player_amt(0, pot),
@@ -326,13 +327,15 @@
   			fail.
   show_players(deal) :-
   	player_hand(P, C1, C2),
+  	    trace(' show_players(deal) player_hand('),trace(P),trace(','),trace(C1),trace(','),trace(C2),trace(')'),trace_nl,
   		player_mode(P, human),
-			trace(' show_players(deal) human P:'),trace(P),trace_nl,
+			trace(' show_players(deal) human P:'),trace(P),trace(' C1:'),trace(C1),trace(' C2:'),trace(C2),trace_nl,
   			text_cursor(P, 3),
   			text_write(C1), text_write(C2),
   			fail.
   show_players(deal) :-
-	trace(' show_players(deal) human P:'),trace(P),trace_nl.
+	trace(' show_players(deal) done'),trace_nl,
+	!.
 
   show_players(hands) :-
   	player_hand(P, C1, C2),
@@ -419,15 +422,15 @@
 
 
   asserta_card_deck(X, D) :-
-  	denomination_value(D, DNM, _),  % Use "high" value 
-    add_card_to_top_of_deck(X, DNM),
+  	denomination_value(C, D, _),  % Use "high" value 
+    add_card_to_top_of_deck(X, C),
     !.
   asserta_card_deck(X, D) :-
     !.
 
   assertz_card_deck(X, D) :-
-  	denomination_value(D, DNM, _),  % Use "high" value 
-    add_card_to_bottom_of_deck(X, DNM),
+  	denomination_value(C, D, _),  % Use "high" value 
+    add_card_to_bottom_of_deck(X, C),
     !.
   assertz_card_deck(X, D):-
 	!.
@@ -439,45 +442,55 @@
 	!.
 
   shuffle_deck(new) :-
+    % trace('shuffle_deck(new)'),trace_nl,
     clear_all_card_decks,
     fail.
   shuffle_deck(new) :-
+    % trace('shuffle_deck(new) clear player hands'),trace_nl,
   	player_hand(P, C1, C2),
   		retract_player_hand(P, C1, C2),
   		fail.  % loop to delete old hands 
   shuffle_deck(new) :-
+    % trace('shuffle_deck(new) 1'),trace_nl,
   	denomination_value(_, DNM, _),  % Use "high" value 
   		assertz_card_deck(discard, DNM),
   		fail.
   shuffle_deck(new) :-
+    % trace('shuffle_deck(new) 2'),trace_nl,
   	denomination_value(_, DNM, _),  % Use "high" value 
   		assertz_card_deck(discard, DNM),
   		fail.
   shuffle_deck(new) :-
+    % trace('shuffle_deck(new) 3'),trace_nl,
   	denomination_value(_, DNM, _),  % Use "high" value 
   		asserta_card_deck(discard, DNM),
   		fail.
   shuffle_deck(new) :-
+    % trace('shuffle_deck(new) 4'),trace_nl,
   	denomination_value(_, DNM, _),  % Use "high" value 
   		asserta_card_deck(discard, DNM),
   		fail.
-  shuffle_deck(new).
+  shuffle_deck(new) :-
+    % trace('shuffle_deck(new) done'),trace_nl,
+    no_op.  
 
   shuffle_deck(old) :-
+    % trace('shuffle_deck(old)'),trace_nl,
   	player_amt(_, stake, A),
   	A =< 0, 
   	!.  % Game over, skip shuffling 
   shuffle_deck(old) :-
+    % trace('shuffle_deck(old) discard to main'),trace_nl,
   	nl, write(" Shuffling cards "),
-  	deal_card_from_deck(discard, C),
-  		add_card_to_bottom_of_deck(main, C),
-  		fail.
+  	move_cards_between_decks(discard, main),
+  	fail.  % Continue with next clause.
   shuffle_deck(old) :-
-    	shuffle_deck(riffle),
-    	shuffle_deck(riffle),
-    	shuffle_deck(riffle),
-    	shuffle_deck(riffle),
-    	shuffle_deck(riffle).
+	trace('shuffle_deck(old) riffling'),trace_nl,
+	shuffle_deck(riffle),
+	shuffle_deck(riffle),
+	shuffle_deck(riffle),
+	shuffle_deck(riffle),
+	shuffle_deck(riffle).
 
   shuffle_deck(riffle) :-
   	write(":"),
@@ -487,28 +500,18 @@
   	!.
   	   	
   shuffle_deck(split):-
-  	deal_card_from_deck(main, C),
-		RR is random_double,
-		split_card_to_pile(C, RR),
-		fail. 
-  shuffle_deck(split) :- !.
+    % trace('shuffle_deck(split)'),trace_nl,
+    split_card_decks_randomly(main, left, right).
   	   	
   shuffle_deck(combine):-
-  	deal_card_from_deck(left, C),
-		add_card_to_bottom_of_deck(main, C),
-		fail.
+    % trace('shuffle_deck(combine) left'),trace_nl,
+    move_cards_between_decks(left, main),
+    fail.  % Proceed to next clause.
   shuffle_deck(combine):-
-  	deal_card_from_deck(right, C),
-		add_card_to_bottom_of_deck(main, C),
-		fail.
+    % trace('shuffle_deck(combine) right'),trace_nl,
+    move_cards_between_decks(right, main),
+    fail.  % Proceed to next clause.
   shuffle_deck(combine) :- !.
-
-  
-  split_card_to_pile(C, N) :-
-  	N < 0.5, !,
-  	add_card_to_bottom_of_deck(left, C).
-  split_card_to_pile(C, _) :-
-  	add_card_to_bottom_of_deck(right, C).
 
 
   deal_cards(start) :-
@@ -527,6 +530,7 @@
   	trace('deal_cards(start) show_players(human)'),trace_nl,
   	show_players(human), !,
   	trace('deal_cards(start) Ready for betting.'),trace_nl,
+  	peekaboo,
   	ask_ok(" Ready for betting. ").
 
   deal_cards(ante) :-
@@ -570,7 +574,8 @@
   	
   deal_a_card(P) :-
     trace('deal_a_card P='),trace(P),trace_nl,
-  	deal_card_from_deck_2(main, C),
+  	deal_card_from_deck(main, C),
+    trace('deal_a_card C='),trace(C),trace_nl,
   	!,
   	denomination_value(C, D, _),  % Use "high" value 
   	trace('deal_a_card D='),trace(D),trace_nl,

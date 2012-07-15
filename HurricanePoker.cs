@@ -172,18 +172,29 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
         var textLine = textLines[textCursorRow];
         var lineLength = textLine.Length;
 
-        if (textCursorCol > lineLength)
+        if (textCursorCol < lineLength)
         {
-          textLine += new string(' ', (textCursorCol - lineLength));
-          lineLength = textLine.Length;
-        }
-        else if (textCursorCol < lineLength)
-        {
-          textLine = textLine.Substring(0, textCursorCol);
-          lineLength = textLine.Length;
-        }
+          var newTextLine = textLine.Substring(0, textCursorCol);
+          newTextLine += text;
 
-        textLine += text;
+          var newCol = newTextLine.Length;
+          if (newCol < lineLength)
+          {
+            newTextLine += textLine.Substring(newCol);
+          }
+
+          textLine = newTextLine;
+          lineLength = textLine.Length;
+        }
+        else
+        {
+          if (textCursorCol > lineLength)
+          {
+            textLine += new string(' ', (textCursorCol - lineLength));
+            lineLength = textLine.Length;
+          }
+          textLine += text;
+        }
 
         textLines[textCursorRow] = textLine;
 
