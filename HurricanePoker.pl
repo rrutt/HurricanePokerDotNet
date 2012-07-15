@@ -56,7 +56,8 @@
   	game_over(-1).
   game_over(CHOICE) :-
   	CHOICE > 0,
-  	player_amt(_, stake, A),
+  	next(P, _),
+  	get_player_amt(P, stake, A),
   	A =< 0, !,
   	ask_ok("Game Over."),
   	game_over(-1).
@@ -65,7 +66,8 @@
 	text_clear,
 	text_cursor(0,1),
 	text_write("Won:"),
-	player_amt(P, stake, A),
+  	next(P, _),
+	get_player_amt(P, stake, A),
 		A > 100,
 		str_int(SA, A),
 		text_cursor(P,1),
@@ -73,7 +75,7 @@
 		fail.
   game_over(-1) :-
   	player_mode(P, human),
-	player_amt(P, stake, A),
+	get_player_amt(P, stake, A),
 	A > 100,
 	text_cursor(P,1),
   	text_write("ö"),  % Smiley face 
@@ -81,7 +83,8 @@
   game_over(-1) :-
 	text_cursor(0,10),
 	text_write("Even:"),
-	player_amt(P, stake, A),
+  	next(P, _),
+	get_player_amt(P, stake, A),
 		A = 100,
 		str_int(SA, A),
 		text_cursor(P,10),
@@ -89,7 +92,7 @@
 		fail.
   game_over(-1) :-
   	player_mode(P, human),
-	player_amt(P, stake, A),
+	get_player_amt(P, stake, A),
 	A = 100,
 	text_cursor(P,10),
   	text_write("ö"),  % Smiley face 
@@ -97,7 +100,8 @@
   game_over(-1) :-
 	text_cursor(0,19),
 	text_write("Lost:"),
-	player_amt(P, stake, A),
+  	next(P, _),
+	get_player_amt(P, stake, A),
 		A >= 0, A < 100,
 		str_int(SA, A),
 		text_cursor(P,19),
@@ -105,7 +109,7 @@
 		fail.
   game_over(-1) :-
   	player_mode(P, human),
-	player_amt(P, stake, A),
+	get_player_amt(P, stake, A),
 	A >= 0, A < 100,
 	text_cursor(P,19),
   	text_write("ö"),  % Smiley face 
@@ -113,7 +117,8 @@
   game_over(-1) :-
 	text_cursor(0,28),
 	text_write("In Debt:"),
-	player_amt(P, stake, A),
+  	next(P, _),
+	get_player_amt(P, stake, A),
 		A < 0,
 		str_int(SA, A),
 		text_cursor(P,28),
@@ -121,42 +126,21 @@
 		fail.
   game_over(-1) :-
   	player_mode(P, human),
-	player_amt(P, stake, A),
+	get_player_amt(P, stake, A),
 	A < 0,
 	text_cursor(P,28),
   	text_write("ö"),  % Smiley face 
 	fail.
   game_over(-1) :-
-  	player_amt(0, hand, H),
+  	get_player_amt(0, hand, H),
   	text_cursor(10,1),
   	text_write("(Original stakes were $100)"),
 	text_cursor(12,1),
   	text_write("Hand #"), text_write(H), text_nl, !,
   	ask_ok,
-	clear_player_amt(0, peek),  % Turn on extra info 
+	clear_player_amt(0, peek),  % Turn off extra info 
 	show_players(info),
 	ask_ok("Game Over.").
-
-  clear_player_amt(P, X) :-
-  	player_amt(P, X, A),
-  		retract_player_amt(P, X, A),
-  		fail.
-  clear_player_amt(P, X) :-
-  	assertz(player_amt(P, X, 0)), !.
-  	
-  add_player_amt(P, X, A) :-
-  	player_amt(P, X, A0),
-  	retract_player_amt(P, X, A0),
-  	A1 is A0 + A,
-  	assertz(player_amt(P, X, A1)), !.
-  add_player_amt(P, X, A) :-
-  	not(player_amt(P, X, _)),
-  	assertz(player_amt(P, X, A)), !.
-
-  retract_player_amt(P, X, A) :-
-        retract(player_amt(P, X, A)),
-        !.
-  retract_player_amt(P, X, A).
 
   set_player(init) :-
 	assertz(player_mode(1, init)),
@@ -234,7 +218,7 @@
   pick_random_mode(5, lowdown).
   pick_random_mode(6, hilo).
   pick_random_mode(7, foldout).
-
+  
 
   peekaboo :-
     peek_enabled,
@@ -303,10 +287,14 @@
   show_players(human) :-
 	!,
 	player_mode(P, human),
+    trace('show_players(human) P='),trace(P),trace_nl,
 	text_cursor(P, 0),
 	text_write("ö"),  % Smiley face 
-	player_amt(P, stake, A),
+    trace('show_players(human) get stake'),trace_nl,
+	get_player_amt(P, stake, A),
+    trace('show_players(human) stake A='),trace(A),trace_nl,
 	str_int(SA, A),
+    trace('show_players(human) stake SA='),trace(SA),trace_nl,
 	text_cursor(12, 1),
 	text_write("ö $"), text_write(SA), text_write("     ").  % Smiley face 
 
@@ -317,8 +305,8 @@
 	text_write("≡").  % Triple-bar 
 
   show_players(deal) :-
-	player_amt(P, stake, _),
-		trace(' show_players(deal) P:'),trace(P),trace_nl,
+    next(P, _),
+		% trace(' show_players(deal) P:'),trace(P),trace_nl,
 		text_cursor(P, 3),
 		text_write("  "),
 	  	player_hand(P, _, _),
@@ -327,14 +315,14 @@
   			fail.
   show_players(deal) :-
   	player_hand(P, C1, C2),
-  	    trace(' show_players(deal) player_hand('),trace(P),trace(','),trace(C1),trace(','),trace(C2),trace(')'),trace_nl,
+  	    % trace(' show_players(deal) player_hand('),trace(P),trace(','),trace(C1),trace(','),trace(C2),trace(')'),trace_nl,
   		player_mode(P, human),
 			trace(' show_players(deal) human P:'),trace(P),trace(' C1:'),trace(C1),trace(' C2:'),trace(C2),trace_nl,
   			text_cursor(P, 3),
   			text_write(C1), text_write(C2),
   			fail.
   show_players(deal) :-
-	trace(' show_players(deal) done'),trace_nl,
+	% trace(' show_players(deal) done'),trace_nl,
 	!.
 
   show_players(hands) :-
@@ -345,7 +333,7 @@
   show_players(hands).  % Terminate loop 
 
   show_players(pot) :- !,
-  	player_amt(0, pot, N),
+  	get_player_amt(0, pot, N),
   	str_int(SN, N),
 	text_cursor(10, 1),
 	text_write("Pot: $"), text_write(SN), text_write("     ").
@@ -353,7 +341,8 @@
   show_players(info) :-
 	text_title(" Player Information "),
 	text_clear,
-	player_amt(P, stake, A),
+	next(P, _),
+	get_player_amt(P, stake, A),
 	        str_int(SA, A),
 		text_cursor(P, 0),
 		text_write("#"), text_write(P), text_write(" $"), text_write(SA),
@@ -364,26 +353,28 @@
 	text_write("ö"),  % Smiley face 
 	fail.
   show_players(info) :-
-	player_amt(P, high, A),
+    next(P, _),
+	get_player_amt(P, high, A),
 	        str_int(SA, A),
 		text_cursor(P, 12),
 		text_write("Hi: "), text_write(SA),
 		fail.
   show_players(info) :-
-	player_amt(P, low, A),
+    next(P, _),
+	get_player_amt(P, low, A),
 	        str_int(SA, A),
 		text_cursor(P, 20),
 		text_write("Lo: "), text_write(SA),
 		fail.
   show_players(info) :-
-  	player_amt(0, peek, 0),
+  	get_player_amt(0, peek, 0),
 	player_mode(P, M),
 		M \= "dealer",
 		text_cursor(P, 28),
 		text_write(M),
 		fail.
   show_players(info) :-
-  	player_amt(0, hand, A),
+  	get_player_amt(0, hand, A),
         str_int(SA, A),
   	text_cursor(10, 3),
   	text_write("Hand #"), text_write(SA),
@@ -393,7 +384,8 @@
 
   show_players(debug) :-
 	text_title(" Player Amounts "),
-	player_amt(P, X, A),
+    next(P, _),
+	get_player_amt(P, X, A),
 	        str_int(SA, A),
 		write(" #"), write(P), write(":"), write(X), write("="), write(SA),
 		fail.
@@ -476,8 +468,7 @@
 
   shuffle_deck(old) :-
     % trace('shuffle_deck(old)'),trace_nl,
-  	player_amt(_, stake, A),
-  	A =< 0, 
+  	negative_amount_exists,
   	!.  % Game over, skip shuffling 
   shuffle_deck(old) :-
     % trace('shuffle_deck(old) discard to main'),trace_nl,
@@ -515,21 +506,21 @@
 
 
   deal_cards(start) :-
-  	trace('deal_cards(start)'),trace_nl,
+  	% trace('deal_cards(start)'),trace_nl,
   	add_player_amt(0, hand, 1),
-  	trace('deal_cards(start) deal_cards(ante)'),trace_nl,
+  	% trace('deal_cards(start) deal_cards(ante)'),trace_nl,
   	deal_cards(ante),
-  	trace('deal_cards(start) deal_cards(around) #1'),trace_nl,
+  	% trace('deal_cards(start) deal_cards(around) #1'),trace_nl,
   	deal_cards(around),
-  	trace('deal_cards(start) deal_cards(around) #2'),trace_nl,
+  	% trace('deal_cards(start) deal_cards(around) #2'),trace_nl,
   	deal_cards(around),
-  	trace('deal_cards(start) show_players(deal)'),trace_nl,
+  	% trace('deal_cards(start) show_players(deal)'),trace_nl,
   	show_players(deal),
-  	trace('deal_cards(start) show_players(pot)'),trace_nl,
+  	% trace('deal_cards(start) show_players(pot)'),trace_nl,
   	show_players(pot),
-  	trace('deal_cards(start) show_players(human)'),trace_nl,
+  	% trace('deal_cards(start) show_players(human)'),trace_nl,
   	show_players(human), !,
-  	trace('deal_cards(start) Ready for betting.'),trace_nl,
+  	% trace('deal_cards(start) Ready for betting.'),trace_nl,
   	peekaboo,
   	ask_ok(" Ready for betting. ").
 
@@ -544,21 +535,21 @@
 	make_player_bet(8, 1).
 
   deal_cards(around) :-
-    trace('deal_a_card(1)'),trace_nl,
+    % trace('deal_a_card(1)'),trace_nl,
   	deal_a_card(1),
-    trace('deal_a_card(2)'),trace_nl,
+    % trace('deal_a_card(2)'),trace_nl,
   	deal_a_card(2),
-    trace('deal_a_card(3)'),trace_nl,
+    % trace('deal_a_card(3)'),trace_nl,
   	deal_a_card(3),
-    trace('deal_a_card(4)'),trace_nl,
+    % trace('deal_a_card(4)'),trace_nl,
   	deal_a_card(4),
-    trace('deal_a_card(5)'),trace_nl,
+    % trace('deal_a_card(5)'),trace_nl,
   	deal_a_card(5),
-    trace('deal_a_card(6)'),trace_nl,
+    % trace('deal_a_card(6)'),trace_nl,
   	deal_a_card(6),
-    trace('deal_a_card(7)'),trace_nl,
+    % trace('deal_a_card(7)'),trace_nl,
   	deal_a_card(7),
-    trace('deal_a_card(8)'),trace_nl,
+    % trace('deal_a_card(8)'),trace_nl,
   	deal_a_card(8).
 
   deal_cards(done) :-
@@ -573,29 +564,30 @@
   
   	
   deal_a_card(P) :-
-    trace('deal_a_card P='),trace(P),trace_nl,
+    % trace('deal_a_card P='),trace(P),trace_nl,
   	deal_card_from_deck(main, C),
-    trace('deal_a_card C='),trace(C),trace_nl,
+    % trace('deal_a_card C='),trace(C),trace_nl,
   	!,
   	denomination_value(C, D, _),  % Use "high" value 
-  	trace('deal_a_card D='),trace(D),trace_nl,
-  	trace('deal_a_card deal_to_player P='),trace(P),trace_nl,
+  	% trace('deal_a_card D='),trace(D),trace_nl,
+  	% trace('deal_a_card deal_to_player P='),trace(P),trace_nl,
   	deal_to_player(P, D),
-  	trace('deal_a_card deal_to_player done P='),trace(P),trace(' D='),trace(D),trace_nl.
+  	% trace('deal_a_card deal_to_player done P='),trace(P),trace(' D='),trace(D),trace_nl,
+  	no_op.
 
   deal_to_player(P, D2) :-  % Sorts as "high" card followed by "low" card
   	player_hand(P, C1, '*'),
   	denomination_value(C1, D1, _),  % Use "high" value 
   	D2 > D1, 
   	!,
-  	trace('deal_to_player D2>D1 P='),trace(P),trace(' D2='),trace(D2),trace_nl,
+  	% trace('deal_to_player D2>D1 P='),trace(P),trace(' D2='),trace(D2),trace_nl,
   	denomination_value(C2, D2, _),  % Use "high" value 
   	retract(player_hand(P, C1, '*')),
   	assertz(player_hand(P, C2, C1)).  % C2 is highest card
   deal_to_player(P, D2) :-
   	player_hand(P, C1, '*'),
   	!,
-  	trace('deal_to_player P='),trace(P),trace(' D2='),trace(D2),trace_nl,
+  	% trace('deal_to_player P='),trace(P),trace(' D2='),trace(D2),trace_nl,
   	denomination_value(C2, D2, _),  % Use "high" value 
   	retract(player_hand(P, C1, '*')),
   	assertz(player_hand(P, C1, C2)).  % C1 is highest card (or a pair)
@@ -606,7 +598,7 @@
   deal_to_player(P, D) :-
     !,
   	denomination_value(C, D, _),  % Use "high" value 
-  	trace('deal_to_player P='),trace(P),trace(' D='),trace(D),trace_nl,
+  	% trace('deal_to_player P='),trace(P),trace(' D='),trace(D),trace_nl,
   	assertz(player_hand(P, C, '*')).
 
 
@@ -628,12 +620,16 @@
   	decide_hands.
 
   process_round(bet) :-
-	player_amt(P, stake, _),
+    trace('process_round(bet) clear bets'),trace_nl,
+	player_amt(P, bet, _),
 		clear_player_amt(P, bet),
 		fail.
   process_round(bet) :-
+    trace('process_round(bet) locate dealer'),trace_nl,
 	player_mode(D, dealer),
+    trace('process_round(bet) D='),trace(D),trace_nl,
 	next(D, P),
+    trace('process_round(bet) next player P='),trace(P),trace_nl,
   	player_round(bet, P, 8, 3, 0, 0).
 
   process_round(draw) :-
@@ -649,14 +645,19 @@
   	fail.
 
   player_round(bet, _, 0, _, _, _) :- !,  % Terminate recursion
+    trace('player_round(bet,...) terminate recursion'),trace_nl,
   	show_players(pot),
   	show_players(human).
   player_round(bet, P, N, R, T, _) :-
+    trace('player_round(bet,...) P='),trace(P),trace(' N='),trace(N),trace_nl,
   	N > 0,
   	player_hand(P, _, _), !,  % Player still in 
+    trace('player_round(bet,...) has hand P='),trace(P),trace_nl,
 	player_mode(P, M),
+        trace('player_round(bet,...) P='),trace(P),trace(' M='),trace(M),trace_nl,
 		M \= "dealer",
 		get_action(bet, M, P, N, R, T, ACT, B),
+        trace('player_round(bet,...) P='),trace(P),trace(' get_action_bet returns ACT='),trace(ACT),trace(' B='),trace(B),trace_nl,
 		player_round(ACT, P, N, R, T, B).
   player_round(bet, P, N, R, T, _) :-  % Player folded 
   	N > 0, !,
@@ -683,7 +684,7 @@
   	player_round(call, P, N, 0, T, 0). 
   player_round(raise, P, _, R, T, A) :-
 	R > 0, !,
-	player_amt(P, bet, B),
+	get_player_amt(P, bet, B),
 	TA is T + A,
 	TB is TA - B,
 	make_player_bet(P, TB),
@@ -697,7 +698,7 @@
 	player_round(bet, NP, N1, R1, TA, 0).
 
   player_round(call, P, N, R, T, _) :-
-	player_amt(P, bet, B),
+	get_player_amt(P, bet, B),
 	T = B, !,
 	add_player_text(P, "# "),
 	write("Player "), write(P), write(" checks"), nl,
@@ -705,7 +706,7 @@
 	N1 is N - 1,
 	player_round(bet, NP, N1, R, T, 0).
   player_round(call, P, N, R, T, _) :-
-	player_amt(P, bet, B), !,
+	get_player_amt(P, bet, B), !,
 	TB is T - B,
 	make_player_bet(P, TB),
 	str_int(STB, TB),
@@ -797,9 +798,9 @@
 	denomination_value(C, D, _),  % Use "high" value 
 	D > 10, !.  	
   get_action(bet, pairwise, _, _, _, _, raise, 1) :-  % Defensive raise 
-  	player_amt(0, draws, 0), !.  % Only before draw 
+  	get_player_amt(0, draws, 0), !.  % Only before draw 
   get_action(bet, pairwise, _, _, _, T, fold, 0) :-  % Fold if big bet without pair 
-  	player_amt(0, draws, N), N > 0,  % Only after draw 
+  	get_player_amt(0, draws, N), N > 0,  % Only after draw 
   	T > 2, !.
   get_action(bet, pairwise, _, _, _, _, call, 0).
 
@@ -822,21 +823,21 @@
 	denomination_value(C, D, _),  % Use "high" value 
 	D > 11, !.
   get_action(bet, highrise, P, _, _, _, fold, 0) :-  % Fold if poor high card 
-  	player_amt(0, draws, 0),  % Only before draw 
+  	get_player_amt(0, draws, 0),  % Only before draw 
   	player_hand(P, C1, C2),
   	C1 \= C2,  % Stay on a pair 
 	denomination_value(C1, D1, _),  % Use "high" value 
 	D1 < 10, !.
   get_action(bet, highrise, P, _, _, _, fold, 0) :-  % Fold if "medium" 
-  	player_amt(0, draws, N), N > 0,  % Only after draw 
+  	get_player_amt(0, draws, N), N > 0,  % Only after draw 
   	player_hand(P, C1, C2),
   	C1 \= C2,  % Stay on a pair 
 	denomination_value(C1, D1, _),  % Use "high" value 
 	D1 > 5, D1 < 12, !.
   get_action(bet, highrise, _, _, _, _, raise, 1) :-  % Defensive raise 
-  	player_amt(0, draws, 0), !.  % Only before draw 
+  	get_player_amt(0, draws, 0), !.  % Only before draw 
   get_action(bet, highrise, _, _, _, T, fold, 0) :-  % Fold if BIG bet 
-  	player_amt(0, draws, N), N > 0,  % Only after draw 
+  	get_player_amt(0, draws, N), N > 0,  % Only after draw 
   	T > 6, !.
   get_action(bet, highrise, _, _, _, _, call, 0) :- !.
 
@@ -861,13 +862,13 @@
 	denomination_value(C, D, _),  % Use "high" value 
 	D < 7, !.
   get_action(bet, lowdown, P, _, _, _, fold, 0) :-  % Fold if high low-card 
-  	player_amt(0, draws, 0),  % Only before draw 
+  	get_player_amt(0, draws, 0),  % Only before draw 
   	player_hand(P, C1, C2),
   	C1 \= C2,  % Stay on a pair 
 	denomination_value(C2, D2, _),  % Use "high" value 
 	D2 > 6, !.
   get_action(bet, lowdown, P, _, _, T, fold, 0) :-  % Fold if not low and big bet 
-  	player_amt(0, draws, N), N > 0,  % Only after draw 
+  	get_player_amt(0, draws, N), N > 0,  % Only after draw 
   	player_hand(P, C1, C2),
   	C1 \= C2,  % Stay on a pair 
 	denomination_value(C1, D1, _),  % Use "high" value 
@@ -901,7 +902,7 @@
 	D2 > 6, D2 < 10,
 	T > 1, !.
   get_action(bet, hilo, P, _, _, _, raise, 1) :-  % Defensive raise if both medium 
-  	player_amt(0, draws, N), N > 0,  % Only after draw 
+  	get_player_amt(0, draws, N), N > 0,  % Only after draw 
   	player_hand(P, C1, C2),
   	C1 \= C2,  % Stay on a pair 
 	denomination_value(C1, D1, _),  % Use "high" value 
@@ -951,11 +952,17 @@
 
 
   get_action(bet, human, P, _, R, T, ACT, B) :-
+    trace('get_action(bet, human) show_players(pot)'),trace_nl,
   	show_players(pot),
+    trace('get_action(bet, human) show_players(human)'),trace_nl,
   	show_players(human),
-  	player_amt(P, bet, PB),
+    trace('get_action(bet, human) get_player_amt bet?'),trace_nl,
+  	get_player_amt(P, bet, PB),
+    trace('get_action(bet, human) get_player_amt bet PB='),trace(PB),trace_nl,
   	CB is T - PB,  % Call bet amount 
+    trace('get_action(bet, human) CB='),trace(CB),trace_nl,
 	peekaboo,
+    trace('get_action(bet, human) bet_menu'),trace_nl,	
   	bet_menu(R, CB, ACT, B).
 
   get_action(draw, human, P, _, _, _, ACT, 0) :-
@@ -984,6 +991,7 @@
 
 
   bet_menu(_, 0, ACT, B) :-
+    trace('bet_menu'),trace_nl,
 	player_mode(P, human),
   	player_hand(P, C1, C2),
   	text_concat(" Bet?  Hand = ", C1, S1),
@@ -1097,7 +1105,7 @@
 	pay_winners(count, low, LP_LIST, 0, NL),
 	findall(P, player_hand_score(P, high, _), HP_LIST),
 	pay_winners(count, high, HP_LIST, 0, NH),
-	player_amt(0, pot, A),
+	get_player_amt(0, pot, A),
 	AL is (A // 2) // NL,  % Odd extra goes to High winners 
 	AH is (A - (AL * NL)) // NH,  % Odd breakage stays as ante 
 	pay_winners(pay, low, LP_LIST, AL, _),
@@ -1221,4 +1229,3 @@
   next(6, 7).
   next(7, 8).
   next(8, 1).
-

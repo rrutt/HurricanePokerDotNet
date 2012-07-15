@@ -20,6 +20,7 @@ namespace Com.Live.RRutt.TuProlog.Lib
     private Random _random = new Random();
 
     private Dictionary<String, List<String>> cardDecks = null;
+    private Dictionary<String, int> playerAmounts = null;
 
     public PrologPredicatesAndFunctors(IMainWindow mainWindow)
     {
@@ -529,6 +530,104 @@ namespace Com.Live.RRutt.TuProlog.Lib
       fromCardDeck.Clear();
 
       return true;
+    }
+
+    private String formPlayerAmountKey(int player, String amountType)
+    {
+      String key = String.Format("{0}|{1}", player, amountType);
+
+      return key;
+    }
+
+    private int getPlayerAmount(int player, String amountType)
+    {
+      if (playerAmounts == null)
+      {
+        playerAmounts = new Dictionary<string, int>();
+      }
+
+      String key = formPlayerAmountKey(player, amountType);
+
+      int playerAmount = 0;
+      if (playerAmounts.ContainsKey(key))
+      {
+        playerAmount = playerAmounts[key];
+      }
+
+      return playerAmount;
+    }
+
+    private void setPlayerAmount(int player, String amountType, int newAmount)
+    {
+      if (playerAmounts == null)
+      {
+        playerAmounts = new Dictionary<string, int>();
+      }
+
+      String key = formPlayerAmountKey(player, amountType);
+
+      int playerAmount = 0;
+      if (playerAmounts.ContainsKey(key))
+      {
+        playerAmount = playerAmounts[key];
+        playerAmounts[key] = newAmount;
+      }
+      else
+      {
+        playerAmounts.Add(key, newAmount);
+      }
+    }
+
+    public bool clear_player_amt_2(Term arg0, Term arg1)
+    {
+      int player = intValueFromTerm(arg0);
+      String amountType = stringValueFromTerm(arg1);
+
+      setPlayerAmount(player, amountType, 0);
+
+      return true;
+    }
+
+    public bool add_player_amt_3(Term arg0, Term arg1, Term arg2)
+    {
+      int player = intValueFromTerm(arg0);
+      String amountType = stringValueFromTerm(arg1);
+      int newAmount = intValueFromTerm(arg2);
+
+      setPlayerAmount(player, amountType, 0);
+
+      return true;
+    }
+
+    public bool get_player_amt_3(Term arg0, Term arg1, Term arg2)
+    {
+      int player = intValueFromTerm(arg0);
+      String amountType = stringValueFromTerm(arg1);
+
+      int amount = getPlayerAmount(player, amountType);
+
+      return unify(arg2, new alice.tuprolog.Int(amount));
+
+      return true;
+    }
+
+    public bool negative_amount_exists_0()
+    {
+      bool foundNegative = false;
+
+      if (playerAmounts != null)
+      {
+        foreach (int amount in playerAmounts.Values)
+        {
+          if (amount < 0)
+          {
+            foundNegative = true;
+            break; // out of 'foreach'
+          }
+        }
+      }
+
+      return foundNegative;
     }
   }
 }
