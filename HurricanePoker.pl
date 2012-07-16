@@ -198,14 +198,14 @@
   set_player(auto).  % Terminate loop 
 
   set_player(dealer) :-
-  	not(player_mode(_, dealer)), !,
+    not(player_is_dealer(_)), !,
   	P is random_int(8),
-  	asserta(player_mode(P, dealer)).
+  	asserta(player_is_dealer(P)).
   set_player(dealer) :-
-  	player_mode(P, dealer), !,
-  	retract_player_mode(P, dealer),
+  	player_is_dealer(P), !,
+  	retract(player_is_dealer(P)),
   	next(P, NP),
-  	asserta(player_mode(NP, dealer)).
+  	asserta(player_is_dealer(NP)).
 
 
   pick_random_mode(0, M) :-
@@ -228,8 +228,7 @@
     peek_enabled,
   	peek_nl, peek_write("Modes:"), peek_nl, peek_write(" "),
 	player_mode(P, M),
-		M \= "dealer",
-		peek_write(" #"), peek_write(P), peek_write("≡"), peek_write(M),
+		peek_write(" #"), peek_write(P), peek_write("="), peek_write(M),
 		fail.
   peekaboo :-
     peek_enabled,
@@ -300,7 +299,7 @@
 
   show_players(dealer) :-
 	!,
-	player_mode(P, dealer),
+	player_is_dealer(P),
 	text_cursor(P, 2),
 	text_write("≡").  % Triple-bar 
 
@@ -369,7 +368,6 @@
   show_players(info) :-
   	get_player_amt(0, peek, 0),
 	player_mode(P, M),
-		M \= "dealer",
 		text_cursor(P, 28),
 		text_write(M),
 		fail.
@@ -629,14 +627,14 @@
 		fail.
   process_round(bet) :-
     % trace('process_round(bet) locate dealer'),trace_nl,
-	player_mode(D, dealer),
+	player_is_dealer(D),
     % trace('process_round(bet) D='),trace(D),trace_nl,
 	next(D, P),
     % trace('process_round(bet) next player P='),trace(P),trace_nl,
   	player_round(bet, P, 8, 3, 0, 0).
 
   process_round(draw) :-
-	player_mode(D, dealer),
+	player_is_dealer(D),
 	next(D, P),
   	player_round(draw, P, 8, 0, 0, 0),
   	show_players(deal).
@@ -658,11 +656,10 @@
     trace('player_round(bet,...) P='),trace(P),trace(' player still in'),trace_nl,
     % trace('player_round(bet,...) has hand P='),trace(P),trace_nl,
 	player_mode(P, M),
-        % trace('player_round(bet,...) P='),trace(P),trace(' M='),trace(M),trace_nl,
-		M \= "dealer",
-		get_action(bet, M, P, N, R, T, ACT, B),
-        % trace('player_round(bet,...) P='),trace(P),trace(' get_action_bet returns ACT='),trace(ACT),trace(' B='),trace(B),trace_nl,
-		player_round(ACT, P, N, R, T, B).
+    % trace('player_round(bet,...) P='),trace(P),trace(' M='),trace(M),trace_nl,
+	get_action(bet, M, P, N, R, T, ACT, B),
+    % trace('player_round(bet,...) P='),trace(P),trace(' get_action_bet returns ACT='),trace(ACT),trace(' B='),trace(B),trace_nl,
+	player_round(ACT, P, N, R, T, B).
   player_round(bet, P, N, R, T, _) :-  % Player folded 
   	N > 0, !,
     trace('player_round(bet,...) P='),trace(P),trace(' player folded'),trace_nl,
@@ -676,9 +673,8 @@
   	N > 0,
   	player_hand(P, _, _), !, % Player still in 
 	player_mode(P, M),
-		M \= "dealer",
-		get_action(draw, M, P, N, R, 0, ACT, _),
-		player_round(ACT, P, N, 0, 0, 0).
+	get_action(draw, M, P, N, R, 0, ACT, _),
+	player_round(ACT, P, N, 0, 0, 0).
   player_round(draw, P, N, _, _, _) :-  % Player folded 
   	N > 0, !,
 	next(P, NP),
