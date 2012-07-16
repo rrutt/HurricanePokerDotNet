@@ -650,8 +650,6 @@ namespace Com.Live.RRutt.TuProlog.Lib
 
       int amount = getPlayerAmount(player, amountType);
 
-      return unify(arg2, new alice.tuprolog.Int(amount));
-
       if (enableTrace)
       {
         String text =
@@ -660,7 +658,7 @@ namespace Com.Live.RRutt.TuProlog.Lib
         System.Console.Out.WriteLine(text);
       }
 
-      return true;
+      return unify(arg2, new alice.tuprolog.Int(amount));
     }
 
     public bool negative_amount_exists_0()

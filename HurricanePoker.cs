@@ -20,6 +20,7 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
   public partial class HurricanePoker : Form, IMainWindow, OutputListener, SpyListener
   {
     public Prolog engine;
+    private PrologPredicatesAndFunctors library;
 
     public const String DefaultTheoryFilePath = @".\HurricanePoker.pl";
 
@@ -85,7 +86,7 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
       engine = new Prolog();
       try
       {
-        var library = new PrologPredicatesAndFunctors(this);
+        library = new PrologPredicatesAndFunctors(this);
         library.enablePeeking = enablePeeking;
         library.enableSpying = enableSpying;
         library.enableTrace = enableTrace;
@@ -357,6 +358,11 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
       outputArea.ScrollToCaret();
 
       Application.DoEvents();
+
+      if (library.enableTrace)
+      {
+        System.Console.Out.Write(s);
+      }
     }
 
     public void onSpy(SpyEvent ev)

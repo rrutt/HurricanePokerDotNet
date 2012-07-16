@@ -394,6 +394,7 @@
 
 
   make_player_bet(P, B) :-
+    trace('make_player_bet P='),trace(P),trace(' B='),trace(B),trace_nl,
   	MB is (-1 * B),
   	add_player_amt(P, stake, MB),
   	add_player_amt(P, bet, B),
@@ -525,14 +526,15 @@
   	ask_ok(" Ready for betting. ").
 
   deal_cards(ante) :-
-	make_player_bet(1, 1),
-	make_player_bet(2, 1),
-	make_player_bet(3, 1),
-	make_player_bet(4, 1),
-	make_player_bet(5, 1),
-	make_player_bet(6, 1),
-	make_player_bet(7, 1),
-	make_player_bet(8, 1).
+    add_player_amt(1, stake, -1),
+    add_player_amt(2, stake, -1),
+    add_player_amt(3, stake, -1),
+    add_player_amt(4, stake, -1),
+    add_player_amt(5, stake, -1),
+    add_player_amt(6, stake, -1),
+    add_player_amt(7, stake, -1),
+    add_player_amt(8, stake, -1),
+    add_player_amt(0, pot, 8).
 
   deal_cards(around) :-
     % trace('deal_a_card(1)'),trace_nl,
@@ -621,8 +623,8 @@
   	decide_hands.
 
   process_round(bet) :-
-    % trace('process_round(bet) clear bets'),trace_nl,
-	player_amt(P, bet, _),
+    trace('process_round(bet) clear bets'),trace_nl,
+	next(P, _),
 		clear_player_amt(P, bet),
 		fail.
   process_round(bet) :-
@@ -646,13 +648,14 @@
   	fail.
 
   player_round(bet, _, 0, _, _, _) :- !,  % Terminate recursion
-    % trace('player_round(bet,...) terminate recursion'),trace_nl,
+    trace('player_round(bet,...) terminate recursion'),trace_nl,
   	show_players(pot),
   	show_players(human).
   player_round(bet, P, N, R, T, _) :-
-    % trace('player_round(bet,...) P='),trace(P),trace(' N='),trace(N),trace_nl,
+    trace('player_round(bet,...) P='),trace(P),trace(' N='),trace(N),trace(' R='),trace(R),trace(' T='),trace(T),trace_nl,
   	N > 0,
   	player_hand(P, _, _), !,  % Player still in 
+    trace('player_round(bet,...) P='),trace(P),trace(' player still in'),trace_nl,
     % trace('player_round(bet,...) has hand P='),trace(P),trace_nl,
 	player_mode(P, M),
         % trace('player_round(bet,...) P='),trace(P),trace(' M='),trace(M),trace_nl,
@@ -662,6 +665,7 @@
 		player_round(ACT, P, N, R, T, B).
   player_round(bet, P, N, R, T, _) :-  % Player folded 
   	N > 0, !,
+    trace('player_round(bet,...) P='),trace(P),trace(' player folded'),trace_nl,
 	next(P, NP),
 	N1 is N - 1,
 	player_round(bet, NP, N1, R, T, 0).
@@ -682,9 +686,11 @@
 	player_round(draw, NP, N1, 0, 0, 0).
 
   player_round(raise, P, N, 0, T, _) :- !,  % Past max. # raises, call instead 
+	trace('player_round(raise) max raises, call instead P='),trace(P),trace(' N='),trace(N),trace(' R=0 T='),trace(T),trace_nl,
   	player_round(call, P, N, 0, T, 0). 
   player_round(raise, P, _, R, T, A) :-
 	R > 0, !,
+	trace('player_round(raise) P='),trace(P),trace(' N='),trace(N),trace(' R='),trace(R),trace(' T='),trace(T),trace_nl,
 	get_player_amt(P, bet, B),
 	TA is T + A,
 	TB is TA - B,
@@ -701,12 +707,14 @@
   player_round(call, P, N, R, T, _) :-
 	get_player_amt(P, bet, B),
 	T = B, !,
+	trace('player_round(call) check instead P='),trace(P),trace(' N='),trace(N),trace(' R='),trace(R),trace(' T='),trace(T),trace_nl,
 	add_player_text(P, "# "),
 	write("Player "), write(P), write(" checks"), nl,
 	next(P, NP),
 	N1 is N - 1,
 	player_round(bet, NP, N1, R, T, 0).
   player_round(call, P, N, R, T, _) :-
+	trace('player_round(call) P='),trace(P),trace(' N='),trace(N),trace(' R='),trace(R),trace(' T='),trace(T),trace_nl,
 	get_player_amt(P, bet, B), !,
 	TB is T - B,
 	make_player_bet(P, TB),
@@ -719,8 +727,10 @@
 	player_round(bet, NP, N1, R, T, 0).
 
   player_round(fold, P, N, R, 0, _) :-  % Convert fold to check 
+	trace('player_round(fold)  check instead P='),trace(P),trace(' N='),trace(N),trace(' R=0 T='),trace(T),trace_nl,
   	player_round(call, P, N, R, 0, 0), !.
   player_round(fold, P, N, R, T, _) :-
+	trace('player_round(fold) P='),trace(P),trace(' N='),trace(N),trace(' R='),trace(R),trace(' T='),trace(T),trace_nl,
   	T > 0, !,
   	player_hand(P, C1, C2),
   	retract_player_hand(P, C1, C2),
