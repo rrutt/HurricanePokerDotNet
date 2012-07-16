@@ -10,7 +10,7 @@
 	nl, write(" 1 bet and 2 raises per round."),
 	nl,
 	shuffle_deck(new),
-	trace('shuffle_deck new to old'),trace_nl,
+	% trace('shuffle_deck new to old'),trace_nl,
 	shuffle_deck(old),
 	nl, write(" Shuffled new deck "), nl, !,
 	clear_player_amt(0, pot),
@@ -32,15 +32,15 @@
 		"Exit Game"
 		], 
 		CHOICE), !,
-	trace('main_menu choice = '),trace(CHOICE),trace_nl,
+	% trace('main_menu choice = '),trace(CHOICE),trace_nl,
 	process(CHOICE, 0), !.
 
   process(1, _) :-  % Deal cards 
     trace('process(1, _)'),trace_nl,
-    peekaboo,
+    % peekaboo,
   	process_round(deal), !.
   process(2, _) :-
-  	add_player_amt(0, peek, 1),  % Avoid peeking 
+  	set_player_amt(0, peek, 1),  % Avoid peeking 
   	show_players(info), !.
   process(3, _) :-  % New deck 
 	shuffle_deck(new),
@@ -287,14 +287,14 @@
   show_players(human) :-
 	!,
 	player_mode(P, human),
-    trace('show_players(human) P='),trace(P),trace_nl,
+    % trace('show_players(human) P='),trace(P),trace_nl,
 	text_cursor(P, 0),
 	text_write("ö"),  % Smiley face 
-    trace('show_players(human) get stake'),trace_nl,
+    % trace('show_players(human) get stake'),trace_nl,
 	get_player_amt(P, stake, A),
-    trace('show_players(human) stake A='),trace(A),trace_nl,
+    % trace('show_players(human) stake A='),trace(A),trace_nl,
 	str_int(SA, A),
-    trace('show_players(human) stake SA='),trace(SA),trace_nl,
+    % trace('show_players(human) stake SA='),trace(SA),trace_nl,
 	text_cursor(12, 1),
 	text_write("ö $"), text_write(SA), text_write("     ").  % Smiley face 
 
@@ -317,7 +317,7 @@
   	player_hand(P, C1, C2),
   	    % trace(' show_players(deal) player_hand('),trace(P),trace(','),trace(C1),trace(','),trace(C2),trace(')'),trace_nl,
   		player_mode(P, human),
-			trace(' show_players(deal) human P:'),trace(P),trace(' C1:'),trace(C1),trace(' C2:'),trace(C2),trace_nl,
+			% trace(' show_players(deal) human P:'),trace(P),trace(' C1:'),trace(C1),trace(' C2:'),trace(C2),trace_nl,
   			text_cursor(P, 3),
   			text_write(C1), text_write(C2),
   			fail.
@@ -476,7 +476,7 @@
   	move_cards_between_decks(discard, main),
   	fail.  % Continue with next clause.
   shuffle_deck(old) :-
-	trace('shuffle_deck(old) riffling'),trace_nl,
+	% trace('shuffle_deck(old) riffling'),trace_nl,
 	shuffle_deck(riffle),
 	shuffle_deck(riffle),
 	shuffle_deck(riffle),
@@ -521,7 +521,7 @@
   	% trace('deal_cards(start) show_players(human)'),trace_nl,
   	show_players(human), !,
   	% trace('deal_cards(start) Ready for betting.'),trace_nl,
-  	peekaboo,
+  	% peekaboo,
   	ask_ok(" Ready for betting. ").
 
   deal_cards(ante) :-
@@ -594,7 +594,8 @@
   deal_to_player(P, _) :-
   	player_hand(P, C1, C2),
   	!,
-  	trace('deal_to_player already has two cards P='),trace(P),trace_nl.  % Already has 2 cards
+  	trace('deal_to_player already has two cards P='),trace(P),trace_nl,  % Already has 2 cards
+  	no_op.
   deal_to_player(P, D) :-
     !,
   	denomination_value(C, D, _),  % Use "high" value 
@@ -603,33 +604,33 @@
 
 
   process_round(deal) :-
-    trace('process_round(deal)'),trace_nl,
+    % trace('process_round(deal)'),trace_nl,
   	show_players(clear),
-  	trace('process_round(deal) deal_cards(start)'),trace_nl,
+  	% trace('process_round(deal) deal_cards(start)'),trace_nl,
   	deal_cards(start),
-  	trace('process_round(deal) clear_player_amt(0, draws)'),trace_nl,
+  	% trace('process_round(deal) clear_player_amt(0, draws)'),trace_nl,
   	clear_player_amt(0, draws),
-  	trace('process_round(deal) process_round(bet) 1'),trace_nl,
+  	% trace('process_round(deal) process_round(bet) 1'),trace_nl,
 	process_round(bet),
-  	trace('process_round(deal) process_round(draw)'),trace_nl,
+  	% trace('process_round(deal) process_round(draw)'),trace_nl,
 	process_round(draw),
-  	trace('process_round(deal) process_round(bet) 2'),trace_nl,
+  	% trace('process_round(deal) process_round(bet) 2'),trace_nl,
 	process_round(bet), !,
 	ask_ok(" Ready for Showdown! "),
   	show_players(hands),
   	decide_hands.
 
   process_round(bet) :-
-    trace('process_round(bet) clear bets'),trace_nl,
+    % trace('process_round(bet) clear bets'),trace_nl,
 	player_amt(P, bet, _),
 		clear_player_amt(P, bet),
 		fail.
   process_round(bet) :-
-    trace('process_round(bet) locate dealer'),trace_nl,
+    % trace('process_round(bet) locate dealer'),trace_nl,
 	player_mode(D, dealer),
-    trace('process_round(bet) D='),trace(D),trace_nl,
+    % trace('process_round(bet) D='),trace(D),trace_nl,
 	next(D, P),
-    trace('process_round(bet) next player P='),trace(P),trace_nl,
+    % trace('process_round(bet) next player P='),trace(P),trace_nl,
   	player_round(bet, P, 8, 3, 0, 0).
 
   process_round(draw) :-
@@ -645,19 +646,19 @@
   	fail.
 
   player_round(bet, _, 0, _, _, _) :- !,  % Terminate recursion
-    trace('player_round(bet,...) terminate recursion'),trace_nl,
+    % trace('player_round(bet,...) terminate recursion'),trace_nl,
   	show_players(pot),
   	show_players(human).
   player_round(bet, P, N, R, T, _) :-
-    trace('player_round(bet,...) P='),trace(P),trace(' N='),trace(N),trace_nl,
+    % trace('player_round(bet,...) P='),trace(P),trace(' N='),trace(N),trace_nl,
   	N > 0,
   	player_hand(P, _, _), !,  % Player still in 
-    trace('player_round(bet,...) has hand P='),trace(P),trace_nl,
+    % trace('player_round(bet,...) has hand P='),trace(P),trace_nl,
 	player_mode(P, M),
-        trace('player_round(bet,...) P='),trace(P),trace(' M='),trace(M),trace_nl,
+        % trace('player_round(bet,...) P='),trace(P),trace(' M='),trace(M),trace_nl,
 		M \= "dealer",
 		get_action(bet, M, P, N, R, T, ACT, B),
-        trace('player_round(bet,...) P='),trace(P),trace(' get_action_bet returns ACT='),trace(ACT),trace(' B='),trace(B),trace_nl,
+        % trace('player_round(bet,...) P='),trace(P),trace(' get_action_bet returns ACT='),trace(ACT),trace(' B='),trace(B),trace_nl,
 		player_round(ACT, P, N, R, T, B).
   player_round(bet, P, N, R, T, _) :-  % Player folded 
   	N > 0, !,
@@ -952,21 +953,17 @@
 
 
   get_action(bet, human, P, _, R, T, ACT, B) :-
-    trace('get_action(bet, human) show_players(pot)'),trace_nl,
   	show_players(pot),
-    trace('get_action(bet, human) show_players(human)'),trace_nl,
   	show_players(human),
-    trace('get_action(bet, human) get_player_amt bet?'),trace_nl,
   	get_player_amt(P, bet, PB),
-    trace('get_action(bet, human) get_player_amt bet PB='),trace(PB),trace_nl,
   	CB is T - PB,  % Call bet amount 
-    trace('get_action(bet, human) CB='),trace(CB),trace_nl,
 	peekaboo,
     trace('get_action(bet, human) bet_menu'),trace_nl,	
   	bet_menu(R, CB, ACT, B).
 
   get_action(draw, human, P, _, _, _, ACT, 0) :-
 	peekaboo,
+    trace('get_action(bet, human) draw_menu'),trace_nl,
   	draw_menu(P, ACT).
 
 
@@ -991,7 +988,7 @@
 
 
   bet_menu(_, 0, ACT, B) :-
-    trace('bet_menu'),trace_nl,
+    % trace('bet_menu'),trace_nl,
 	player_mode(P, human),
   	player_hand(P, C1, C2),
   	text_concat(" Bet?  Hand = ", C1, S1),

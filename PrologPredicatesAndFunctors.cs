@@ -182,6 +182,12 @@ namespace Com.Live.RRutt.TuProlog.Lib
 
       int choice = _mainWindow.MenuDialog(menuCaption, choicesList);
 
+      if (enableTrace)
+      {
+        String text = String.Format("menu({0}, _, {1})", menuCaption, choice);
+        System.Console.Out.WriteLine(text);
+      }
+
       return unify(choiceResultTerm, new alice.tuprolog.Int(choice));
     }
 
@@ -585,6 +591,33 @@ namespace Com.Live.RRutt.TuProlog.Lib
 
       setPlayerAmount(player, amountType, 0);
 
+      if (enableTrace)
+      {
+        String text =
+          String.Format("clear_player_amt({0}, {1})",
+            player, amountType);
+        System.Console.Out.WriteLine(text);
+      }
+
+      return true;
+    }
+
+    public bool set_player_amt_3(Term arg0, Term arg1, Term arg2)
+    {
+      int player = intValueFromTerm(arg0);
+      String amountType = stringValueFromTerm(arg1);
+      int newAmount = intValueFromTerm(arg2);
+
+      setPlayerAmount(player, amountType, newAmount);
+
+      if (enableTrace)
+      {
+        String text =
+          String.Format("set_player_amt({0}, {1}, {2})",
+            player, amountType, newAmount);
+        System.Console.Out.WriteLine(text);
+      }
+
       return true;
     }
 
@@ -592,9 +625,20 @@ namespace Com.Live.RRutt.TuProlog.Lib
     {
       int player = intValueFromTerm(arg0);
       String amountType = stringValueFromTerm(arg1);
-      int newAmount = intValueFromTerm(arg2);
+      int increment = intValueFromTerm(arg2);
 
-      setPlayerAmount(player, amountType, 0);
+      int oldAmount = getPlayerAmount(player, amountType);
+      int newAmount = oldAmount + increment;
+
+      setPlayerAmount(player, amountType, newAmount);
+
+      if (enableTrace)
+      {
+        String text =
+          String.Format("add_player_amt({0}, {1}, {2}) old={3} new={4}",
+            player, amountType, increment, oldAmount, newAmount);
+        System.Console.Out.WriteLine(text);
+      }
 
       return true;
     }
@@ -607,6 +651,14 @@ namespace Com.Live.RRutt.TuProlog.Lib
       int amount = getPlayerAmount(player, amountType);
 
       return unify(arg2, new alice.tuprolog.Int(amount));
+
+      if (enableTrace)
+      {
+        String text =
+          String.Format("get_player_amt({0}, {1}, {2})",
+            player, amountType, amount);
+        System.Console.Out.WriteLine(text);
+      }
 
       return true;
     }
