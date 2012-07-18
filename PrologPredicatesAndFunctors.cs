@@ -22,6 +22,8 @@ namespace Com.Live.RRutt.TuProlog.Lib
     private Dictionary<String, List<String>> cardDecks = null;
     private Dictionary<String, int> playerAmounts = null;
 
+    private Dictionary<String, Dictionary<int, int>> handScores = null;
+
     public PrologPredicatesAndFunctors(IMainWindow mainWindow)
     {
       _mainWindow = mainWindow;
@@ -169,6 +171,7 @@ namespace Com.Live.RRutt.TuProlog.Lib
       Term choiceResultTerm = arg2;
 
       var choicesList = new List<string>();
+      var choicesTrace = string.Empty;
 		  var iter = choices.listIterator();
       while (iter.hasNext())
       {
@@ -178,13 +181,22 @@ namespace Com.Live.RRutt.TuProlog.Lib
         {
           choicesList.Add(choiceText);
         }
+
+        if (enableTrace)
+        {
+          if (choicesTrace.Length > 0)
+          {
+            choicesTrace += ",";
+          }
+          choicesTrace += choiceText;
+        }
       }
 
       int choice = _mainWindow.MenuDialog(menuCaption, choicesList);
 
       if (enableTrace)
       {
-        String text = String.Format("menu({0}, _, {1})", menuCaption, choice);
+        String text = String.Format("menu({0}, [{1}], {2})", menuCaption, choicesTrace, choice);
         System.Console.Out.WriteLine(text);
       }
 
@@ -401,6 +413,13 @@ namespace Com.Live.RRutt.TuProlog.Lib
       return true;
     }
 
+    public bool clear_all_card_decks_0()
+    {
+      cardDecks = null;
+
+      return true;
+    }
+
     private List<String> getCardDeck(String deckName)
     {
       if (cardDecks == null)
@@ -420,13 +439,6 @@ namespace Com.Live.RRutt.TuProlog.Lib
       }
 
       return cardDeck;
-    }
-
-    public bool clear_all_card_decks_0()
-    {
-      cardDecks = null;
-
-      return true;
     }
 
     public bool add_card_to_top_of_deck_2(Term arg0, Term arg1)
@@ -678,6 +690,92 @@ namespace Com.Live.RRutt.TuProlog.Lib
       }
 
       return foundNegative;
+    }
+
+    private Dictionary<int, int> getPlayerScores(String highOrLow)
+    {
+      if (handScores == null)
+      {
+        handScores = new Dictionary<String, Dictionary<int, int>>();
+      }
+
+      Dictionary<int, int> playerScores = null;
+      if (handScores.ContainsKey(highOrLow))
+      {
+        playerScores = handScores[highOrLow];
+      }
+      else
+      {
+        playerScores = new Dictionary<int, int>();
+        handScores.Add(highOrLow, playerScores);
+      }
+
+      return playerScores;
+    }
+
+    public bool clear_player_hand_scores_0()
+    {
+      handScores = null;
+
+      return true;
+    }
+
+    public bool record_player_hand_score_3(Term arg0, Term arg1, Term arg2)
+    {
+      int player = intValueFromTerm(arg0);
+      string highOrLow = stringValueFromTerm(arg1);
+      int score = intValueFromTerm(arg2);
+
+      var playerScores = getPlayerScores(highOrLow);
+
+      if (playerScores.ContainsKey(player))
+      {
+        playerScores.Remove(player);
+      }
+
+      playerScores.Add(player, score);
+
+      if (enableTrace)
+      {
+        String text = String.Format("record_player_hand_score({0}, {1}, {2})", player, highOrLow, score);
+        System.Console.Out.WriteLine(text);
+      }
+
+      return true;
+    }
+
+    public bool player_has_best_hand_score_3(Term arg0, Term arg1, Term arg2)
+    {
+      int player = intValueFromTerm(arg0);
+      string highOrLow = stringValueFromTerm(arg1);
+
+      int bestScore = int.MinValue;
+      int playerScore = int.MinValue;
+      bool playerIsBest = false;
+
+      var playerScores = getPlayerScores(highOrLow);
+      if (playerScores.ContainsKey(player))
+      {
+        playerScore = playerScores[player];
+
+        foreach (var score in playerScores.Values)
+        {
+          if (score > bestScore)
+          {
+            bestScore = score;
+          }
+        }
+
+        playerIsBest = (playerScore >= bestScore);
+      }
+
+      if (enableTrace)
+      {
+        String text = String.Format("best_player_hand_score({0}, {1}, {2}) -> {3}", player, highOrLow, playerScore, playerIsBest);
+        System.Console.Out.WriteLine(text);
+      }
+
+      return (playerIsBest && unify(arg2, new alice.tuprolog.Int(playerScore)));
     }
   }
 }
