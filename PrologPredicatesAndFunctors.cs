@@ -177,10 +177,7 @@ namespace Com.Live.RRutt.TuProlog.Lib
       {
         Term choiceTerm = (Term)(iter.next());
         var choiceText = Utilities.stripQuotes(stringValueFromTerm(choiceTerm));
-        if (choiceText.Length > 0)
-        {
-          choicesList.Add(choiceText);
-        }
+        choicesList.Add(choiceText);
 
         if (enableTrace)
         {

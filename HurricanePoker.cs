@@ -234,7 +234,7 @@ namespace Com.Live.RRutt.HurricanePokerDotNet
         button.Tag = choiceTag;
         button.Text = choiceText;
         button.UseVisualStyleBackColor = true;
-        button.Visible = true;
+        button.Visible = (choiceText.Length > 0);
         button.Click += new System.EventHandler(this.menuButton_Click);
 
         buttonLocation = new Point(
