@@ -2,8 +2,12 @@ Hurricane is two-card draw poker, deuces wild, played as high/low;
 aces, deuces play both high and low.
 
 This is an implementation of the game using C# and Prolog.
-The game rules and artificial intelligence engine uses tuProlog (
-also known as 2p) from the University of Bologna.
+
+The game rules and artificial intelligence engine uses tuProlog (also known as 2p) 
+from the University of Bologna.
+  
+Since tuProlog is written in Java, the IKVM tool set was used to convert the
+Java byte code in 2p.jar to a Microsoft .NET MSIL assembly alice.tuprolog.dll.
 
 To run the game, open a command-prompt (terminal) window and navigate to the out sub-folder, 
 containing the executable files. 
